@@ -223,8 +223,8 @@
             let random = Math.floor(Math.random() * ((totalQuestion + 2) - min) + min);
             if (random < 0) {
                 currentQuestionIndex = 0;
-            } else if (random > totalQuestion) {
-                currentQuestionIndex = totalQuestion;
+            } else if (random >= totalQuestion) {
+                currentQuestionIndex = totalQuestion - 1;
             } else {
                 currentQuestionIndex = random;
             }
