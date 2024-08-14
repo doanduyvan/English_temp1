@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         .root {
             width: 100vw;
             height: 100vh;
@@ -15,7 +21,7 @@
         }
 
         .root>div {
-            width: 400px;
+            max-width: 400px;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
