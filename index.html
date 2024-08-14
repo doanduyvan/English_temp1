@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EngLish2.2</title>
     <style>
-
         * {
             margin: 0;
             padding: 0;
@@ -63,6 +62,7 @@
         .btn {
             display: flex;
             justify-content: space-between;
+            flex-wrap: wrap;
             gap: 10px;
             margin-top: 20px;
         }
@@ -72,27 +72,37 @@
             border: none;
             border-radius: 5px;
             background-color: #e9b21b;
-
             color: white;
             font-weight: bold;
             cursor: pointer;
+        }
+
+        .btn>button:nth-child(5) {
+            /* background-color: #3498db;? */
+            flex-basis: 100%;
         }
 
         .btn>button:hover {
             background-color: #b89216;
         }
 
+        .ok,
         .notes {
             display: flex;
             justify-content: start;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 5px;
             border: 1px solid #3498db;
             border-radius: 5px;
             padding: 10px;
         }
 
+        .ok {
+            border: 1px solid red;
+        }
+
+        .ok>div,
         .notes>div {
             padding: 6px 10px;
             border: 1px solid #3498db;
@@ -100,6 +110,11 @@
             background-color: #3498db;
             color: white;
             cursor: pointer;
+        }
+
+        .ok>div {
+            background-color: red;
+            border: 1px solid red;
         }
 
         .Qs {
@@ -118,17 +133,22 @@
             }
         }
 
-        .notification{
+        .notification {
             font-size: 20px;
             font-weight: bold;
             text-align: center;
             padding-bottom: 10px;
         }
 
-        .name{
+        .name {
             margin-top: 10px;
         }
 
+        .p {
+            font-size: 15px;
+            margin: 0;
+            margin-top: 15px;
+        }
     </style>
 </head>
 
@@ -150,13 +170,21 @@
                 <p class="Qs">Current Question: <span id="currentQuestion">1</span></p>
             </div>
             <div class="btn">
-                <button onclick="speakQuestion()">Question</button>
-                <button onclick="speakAnswer()">Answer</button>
-                <button onclick="myrandom()">Random</button>
-                <button onclick="note()">Note</button>
+                <button onclick="speakQuestion()" title="Bấm vào đây để nghe câu hỏi hiện tại">Question</button>
+                <button onclick="speakAnswer()" title="Bấm vào đây để nghe câu trả lời hiện tại">Answer</button>
+                <button onclick="note()" title="Bấm vào đây để thêm câu hỏi chưa thuộc">Note</button>
+                <button onclick="ok()"
+                    title="Nếu bạn thuộc câu hỏi này rồi, hãy bấm vào đây, nó sẽ không xuất hiện trong các lần tiếp theo">OK</button>
+                <button onclick="myrandom()" title="Đổi câu hỏi khác">Random</button>
             </div>
+
+            <p class="p">Bấm vào note sẽ hiển thị lên câu hỏi trong note</p>
             <div class="notes">
-               
+
+            </div>
+            <p class="p">Bấm vào đây để hủy bỏ những câu hỏi đã thuộc</p>
+            <div class="ok">
+
             </div>
             <div class="name">
                 Duy Vấn
@@ -172,11 +200,39 @@
         let currentTopic = 1;
         let currentQuestionIndex = 0;
         let notes = [];
+        let arrRandom = [];
 
+        getRandomItem();
+        function getRandomItem() {
+            let totalQuestion = question(currentTopic).length;
+            arrRandom = [];
+            for (let i = 0; i < totalQuestion; i++) {
+                arrRandom.push(i);
+            }
+        }
 
-        function note(){
+        function ok() {
+            const indexCurrent = arrRandom.findIndex(item => item == currentQuestionIndex);
+            if (indexCurrent == -1) {
+                return;
+            }
+            arrRandom.splice(indexCurrent, 1);
+            const Eok = document.querySelector('.ok');
+            const div = document.createElement('div');
+            div.setAttribute('data-id', currentQuestionIndex);
+            div.innerHTML = currentQuestionIndex + 1;
+            div.onclick = () => {
+                let id = div.getAttribute('data-id');
+                arrRandom.push(parseInt(id));
+                div.remove();
+            }
+            Eok.appendChild(div);
+
+        }
+
+        function note() {
             const Enotes = document.querySelector('.notes');
-            if(notes.includes(currentQuestionIndex)){
+            if (notes.includes(currentQuestionIndex)) {
                 return;
             }
             notes.push(currentQuestionIndex);
@@ -184,7 +240,7 @@
             div.setAttribute('data-id', currentQuestionIndex);
             div.innerHTML = currentQuestionIndex + 1;
             div.onclick = () => {
-                let id =  div.getAttribute('data-id');
+                let id = div.getAttribute('data-id');
                 currentQuestionIndex = parseInt(id);
                 const div2 = document.querySelector('.div2');
                 div2.innerHTML = `
@@ -214,19 +270,21 @@
             });
             currentTopic = id;
             btns[id - 1].classList.add('active');
+            getRandomItem();
             myrandom();
         }
 
         function myrandom() {
             const min = -2;
-            const totalQuestion = question(currentTopic).length;
+            const totalQuestion = arrRandom.length;
             let random = Math.floor(Math.random() * ((totalQuestion + 2) - min) + min);
+
             if (random < 0) {
-                currentQuestionIndex = 0;
+                currentQuestionIndex = arrRandom[0];
             } else if (random >= totalQuestion) {
-                currentQuestionIndex = totalQuestion - 1;
+                currentQuestionIndex = arrRandom[totalQuestion - 1];
             } else {
-                currentQuestionIndex = random;
+                currentQuestionIndex = arrRandom[random];
             }
             const div2 = document.querySelector('.div2');
             div2.innerHTML = `
@@ -268,7 +326,7 @@
                 },
                 {
                     question: "What is your favorite website to shop online? Why do you like that website?",
-                    answer: "My favorite shopping website is shoppe.com because it is very popular in Vietnam and has many discount codes, which help me save money and time."
+                    answer: "My favorite shopping website is shoppe.com, because it is very popular in Vietnam and has many discount codes, which help me save money and time."
                 },
                 {
                     question: "What kind of things do you usually buy in stores?",
