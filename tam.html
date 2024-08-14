@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .root {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .root>div {
+            width: 400px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .topics {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .topics>button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+
+        .topics>button:hover {
+            background-color: #2980b9;
+        }
+
+        .topics>button.active {
+            background-color: green;
+        }
+
+        .div2 {
+            margin-top: 20px;
+            border: 1px solid #3498db;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .btn {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn>button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #e9b21b;
+
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn>button:hover {
+            background-color: #b89216;
+        }
+
+        .notes {
+            display: flex;
+            justify-content: start;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            border: 1px solid #3498db;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .notes>div {
+            padding: 6px 10px;
+            border: 1px solid #3498db;
+            border-radius: 5px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+
+        .Qs {
+            animation: fadeIn .3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: rotate3d(1, 1, 1, 360deg);
+            }
+
+            to {
+                opacity: 1;
+                transform: rotate3d(1, 1, 1, 0deg);
+            }
+        }
+
+        .notification {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="root">
+
+        <div>
+            <div class="notification">
+            </div>
+
+            <div class="topics">
+                <button class="active" onclick="showTopic(1)">Topic 1</button>
+                <button onclick="showTopic(2)">Topic 2</button>
+                <button onclick="showTopic(3)">Topic 3</button>
+                <button onclick="showTopic(4)">Topic 4</button>
+            </div>
+            <div class="div2">
+                <p class="Qs">Current Question: <span id="currentQuestion">1</span></p>
+            </div>
+            <div class="btn">
+                <button onclick="speakQuestion()">Question</button>
+                <button onclick="speakAnswer()">Answer</button>
+                <button onclick="myrandom()">Random</button>
+                <button onclick="note()">Note</button>
+            </div>
+            <div class="notes">
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <script>
+
+        let currentTopic = 1;
+        let currentQuestionIndex = 0;
+        let notes = [];
+
+
+        function note() {
+            const Enotes = document.querySelector('.notes');
+            if (notes.includes(currentQuestionIndex)) {
+                return;
+            }
+            notes.push(currentQuestionIndex);
+            const div = document.createElement('div');
+            div.setAttribute('data-id', currentQuestionIndex);
+            div.innerHTML = currentQuestionIndex + 1;
+            div.onclick = () => {
+                let id = div.getAttribute('data-id');
+                currentQuestionIndex = parseInt(id);
+                const div2 = document.querySelector('.div2');
+                div2.innerHTML = `
+                    <p class="Qs">Current Question: <span id="currentQuestion">${currentQuestionIndex + 1}</span></p>
+                `;
+            }
+            Enotes.appendChild(div);
+
+        }
+
+        function speakAnswer() {
+            const text = question(currentTopic)[currentQuestionIndex]?.answer || 'What the fuck, No answer';
+            mySpeak(text);
+        }
+
+        function speakQuestion() {
+            let text = question(currentTopic)[currentQuestionIndex]?.question || 'What the fuck, No question';
+            mySpeak(text);
+        }
+
+        function showTopic(id) {
+            const Enotes = document.querySelector('.notes');
+            Enotes.innerHTML = '';
+            const btns = document.querySelectorAll('.topics>button');
+            btns.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            currentTopic = id;
+            btns[id - 1].classList.add('active');
+            myrandom();
+        }
+
+        function myrandom() {
+            const min = -2;
+            const totalQuestion = question(currentTopic).length;
+            let random = Math.floor(Math.random() * ((totalQuestion + 2) - min) + min);
+            if (random < 0) {
+                currentQuestionIndex = 0;
+            } else if (random > totalQuestion) {
+                currentQuestionIndex = totalQuestion;
+            } else {
+                currentQuestionIndex = random;
+            }
+            const div2 = document.querySelector('.div2');
+            div2.innerHTML = `
+                <p class="Qs">Current Question: <span id="currentQuestion">${currentQuestionIndex + 1}</span></p>
+            `;
+        }
+
+        function mySpeak(text) {
+            const notification = document.querySelector('.notification');
+            if (!speechSynthesis.speaking) {
+                let utterance = new SpeechSynthesisUtterance(text);
+                speechSynthesis.speak(utterance);
+                notification.innerHTML = '';
+            } else {
+                notification.innerHTML = 'Máy đang nói, bấm ít ít thôi, cái địt cụ mày';
+            }
+            let to = setTimeout(() => {
+                notification.innerHTML = '';
+            }, 2000);
+        }
+
+        function question(topic = 1) {
+            const topic1 = [
+                {
+                    question: "Are you a shopaholic? Why?",
+                    answer: "I am not a shopaholic because I don’t often go shopping."
+                },
+                {
+                    question: "How often do you go shopping?",
+                    answer: "Only twice a week."
+                },
+                {
+                    question: "Do you prefer buying things online or in stores? Why?",
+                    answer: "I prefer shopping online because it’s more convenient and cheaper than buying in stores."
+                },
+                {
+                    question: "What kind of things do you usually buy online?",
+                    answer: "I usually shop for my clothes, books, and personal items online."
+                },
+                {
+                    question: "What is your favorite website to shop online? Why do you like that website?",
+                    answer: "My favorite website I often shop online is www.shoppe.com, because it’s very popular in Viet Nam."
+                },
+                {
+                    question: "What kind of things do you usually buy in stores?",
+                    answer: "Sometimes, I go to markets to buy food and drink."
+                },
+                {
+                    question: "What do you like spending money on? Why?",
+                    answer: "I love spending money on clothes because they make me more beautiful and confident."
+                },
+                {
+                    question: "What don't you like spending money on? Why?",
+                    answer: "I don’t like spending money on fast food because it’s unhealthy for me."
+                },
+                {
+                    question: "Where do you usually buy your clothes? (a specific place)? Why do you choose that place?",
+                    answer: "I usually buy my clothes online on the shop page. There are a variety of products with discount vouchers and I can save money and time."
+                },
+                {
+                    question: "Where do you usually buy fruit and vegetables? (a specific place)? Why do you choose that place?",
+                    answer: "For fruit and vegetables, I often go to the markets to buy them. I chose that place because it’s near my house and I can see and check the products before buying them."
+                },
+                {
+                    question: "Where do you buy your household appliances? (a specific place)? Why do you choose that place?",
+                    answer: "I sometimes buy household appliances at electric stores because the places sell a lot of reliable electric products."
+                },
+                {
+                    question: "Do you like to buy sale-off items? Why?",
+                    answer: "I love buying sale-off items because I can get more things with the same amount of money."
+                }
+            ];
+
+            const topic2 = [
+                {
+                    question: "Where is your hometown?",
+                    answer: "My hometown is Quang Binh Province."
+                },
+                {
+                    question: "Is it in the North, in the South, or in the Central of Vietnam?",
+                    answer: "It’s located in the central of Viet Nam."
+                },
+                {
+                    question: "Describe some geographical features in your hometown. (mountainous, remote, delta,...)",
+                    answer: "It’s famous for sandy beaches and tasty seafood."
+                },
+                {
+                    question: "How many seasons does your hometown have? What are they?",
+                    answer: "There are 2 main seasons here including rainy season and dry season."
+                },
+                {
+                    question: "What is the weather like in each season?",
+                    answer: "Dry season is quite hot and sunny. Rainy season has usually rain and wind."
+                },
+                {
+                    question: "What do people often do in each season?",
+                    answer: "In dry season, people often go swimming and play outdoor games. In rainy season, some people stay at home and have cozy meals with their family."
+                },
+                {
+                    question: "Which season do you like the most?",
+                    answer: "I like the rainy season most because I love seeing rain. It’s very cool."
+                },
+                {
+                    question: "Which season do you hate the most?",
+                    answer: "I hate the dry season because it is very hot and my skin can be dark under the sun for a long time."
+                },
+                {
+                    question: "Does the weather affect people’s lives in your hometown? In what way?",
+                    answer: "The weather in my hometown has effects on people’s lives. In the rainy season, people feel excited about their work. In contrast, in the dry season, they are usually bored and sleepy."
+                },
+                {
+                    question: "What is your dream weather pattern that you want to have in your hometown?",
+                    answer: "I would like to enjoy the weather of 4 seasons such as spring, summer, autumn, and winter in Quang Binh in my hometown."
+                }
+            ];
+
+            const topic3 = [
+                {
+                    question: "What is your favourite sport?",
+                    answer: "My favorite sport is playing badminton."
+                },
+                {
+                    question: "How long have you played that sport?",
+                    answer: "I have played that sport for 6 years."
+                },
+                {
+                    question: "How often do you play that sport?",
+                    answer: "I play badminton every day."
+                },
+                {
+                    question: "What body parts does that sport have positive effects on?",
+                    answer: "Playing badminton helps me improve my health."
+                },
+                {
+                    question: "When was the last time you played that sport?",
+                    answer: "The last time I played it was yesterday."
+                },
+                {
+                    question: "Where did you play that sport?",
+                    answer: "I played that sport in front of my house yard."
+                },
+                {
+                    question: "Did you play alone or play in a team?",
+                    answer: "I played with my sister."
+                },
+                {
+                    question: "How long did you play that time?",
+                    answer: "I spent 3 hours playing that sport."
+                },
+                {
+                    question: "How did you feel after playing that sport?",
+                    answer: "After playing badminton, I feel healthy and relaxed."
+                },
+                {
+                    question: "Did you have any difficulties when you played?",
+                    answer: "It is very easy to play."
+                },
+                {
+                    question: "Do you think people should play that sport? Why/ Why not?",
+                    answer: "I think people should play badminton because it is quite cheap and helps us keep fit."
+                }
+            ];
+
+            const topic4 = [
+
+            ];
+
+            if (topic == 1) {
+                return topic1;
+            } else if (topic == 2) {
+                return topic2;
+            } else if (topic == 3) {
+                return topic3;
+            } else if (topic == 4) {
+                return topic4;
+            } else {
+                return topic1;
+            }
+        }
+
+
+
+    </script>
+
+</body>
+
+</html>
