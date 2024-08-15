@@ -292,11 +292,13 @@
         }
 
         function speakAnswer() {
+            stopSpeaking();
             const text = question(currentTopic)[currentQuestionIndex]?.answer || 'What the fuck, No answer';
             mySpeak(text);
         }
 
         function speakQuestion() {
+            stopSpeaking();
             let text = question(currentTopic)[currentQuestionIndex]?.question || 'What the fuck, No question';
             mySpeak(text);
         }
