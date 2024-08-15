@@ -204,6 +204,8 @@
 
         getRandomItem();
         function getRandomItem() {
+        const ok = document.querySelector('.ok');
+        ok.innerHTML = '';
             let totalQuestion = question(currentTopic).length;
             arrRandom = [];
             for (let i = 0; i < totalQuestion; i++) {
