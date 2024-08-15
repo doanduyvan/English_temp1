@@ -234,7 +234,7 @@
 
         const range = document.querySelector('#range');
         range.addEventListener('input', (e) => {
-            rate = parseInt(e.target.value);
+            rate = parseFloat(e.target.value);
             const label = document.querySelector('.rate>label>span');
             label.innerHTML = e.target.value;
         });
